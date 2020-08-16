@@ -1,0 +1,28 @@
+# When we stop wanting a user/key, we shouldn't just remove them from this file;
+# we should leave them here but with `state: absent` so they get tidied away.
+---
+- name: 'mas90-adm group'
+  group:
+      name: 'mas90-adm'
+      gid: 2645
+
+- name: 'mas90-adm user'
+  user:
+      name: 'mas90-adm'
+      comment: 'Malcolm Scott'
+      uid: 2645
+      group: 'mas90-adm'
+      groups: ['sudo', 'adm']
+      shell: '/bin/bash'
+
+- name: 'mas90-adm SSH key management check'
+  stat:
+      path: '/home/mas90-adm/.ssh/authorized_keys.d'
+  register: mas90_adm_managed_keys
+
+- name: 'mas90-adm SSH keys'
+  authorized_key:
+      user: 'mas90-adm'
+      key: 'https://callisto.malc.org.uk/~malcolm/authorized_keys'
+  when: not mas90_adm_managed_keys.stat.exists
+

@@ -1,0 +1,31 @@
+---
+- name: 'Restart NFSv4 ID mapper'
+  service:
+      name: 'nfs-idmapd'
+      state: restarted
+  ignore_errors: yes
+
+- name: 'Restart fail2ban'
+  service:
+      name: 'fail2ban'
+      state: restarted
+
+- name: 'Tidy up after fail2ban'
+  file:
+      path: '/var/lib/fail2ban/fail2ban.sqlite3'
+      state: absent
+
+- name: 'Enable apticron service'
+  systemd:
+      name: apticron.service
+      enabled: yes
+
+- name: 'Update GRUB'
+  command:
+      cmd: /usr/sbin/update-grub
+
+- name: 'Restart getty'
+  systemd:
+      daemon_reload: yes
+      name: 'getty@tty1'
+      state: 'restarted'

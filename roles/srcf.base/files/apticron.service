@@ -1,0 +1,16 @@
+[Unit]
+Description=SRCF apticron: email about pending upgrades
+ConditionACPower=true
+ConditionFileIsExecutable=/usr/sbin/apticron
+After=apt-daily-upgrade.service
+
+[Service]
+Type=oneshot
+# The update step is done by apt-daily.service, potentially some hours before we actually
+# did the upgrade; don't email about packages added to the repository between the two
+ExecStart=/bin/bash -ec "source <(grep -v '^/usr/bin/apt-get -qq update' /usr/sbin/apticron)"
+# Fudge timers so that traditional cron-invoked apticron doesn't run for 24h if we do
+ExecStartPost=/usr/bin/touch -d "+24 hours" /var/lib/apticron/cron_run
+
+[Install]
+WantedBy=apt-daily-upgrade.service

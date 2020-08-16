@@ -1,0 +1,14 @@
+// Maintained via Ansible; changes are liable to be overwritten
+Unattended-Upgrade::Origins-Pattern {
+	"o=${distro_id},n=${distro_codename}";
+	"o=${distro_id}ESM,n=${distro_codename}";
+	"o=Canonical,n=${distro_codename}";
+	"o=Raspberry Pi Foundation,n=${distro_codename}";
+	"o=LP-PPA-srcf-serveradmin";
+	"o=LP-PPA-certbot-certbot";
+	"o=LP-PPA-malcscott-nis";
+	"o=LP-PPA-malcscott-entropy";
+	"o=LP-PPA-malcscott-python-raven";
+	"o=LP-PPA-malcscott-python-ucam-webauth";
+};
+Unattended-Upgrade::Remove-Unused-Dependencies "true";

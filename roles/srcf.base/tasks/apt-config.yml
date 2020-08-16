@@ -1,0 +1,33 @@
+---
+- name: 'Configure unattended-upgrades, sudo and SSH'
+  import_role:
+      name: geerlingguy.security
+  vars:
+      security_ssh_usedns: "yes"
+      security_ssh_x11_forwarding: "yes"
+      security_ssh_permit_root_login: "prohibit-password"
+
+- name: 'Further configure unattended-upgrades'
+  copy:
+      dest: '/etc/apt/apt.conf.d/52unattended-upgrades-srcf-ansible'
+      src: 'unattended-upgrades'
+      mode: '0644'
+
+- name: 'Install apticron script (cron)'
+  copy:
+      dest: '/etc/cron.daily/apticron'
+      src: 'apticron.cron'
+      mode: '0755'
+
+- name: 'Check whether our apt has systemd infrastructure'
+  stat:
+      path: '/lib/systemd/system/apt-daily-upgrade.service'
+  register: apt_systemd
+
+- name: 'Install apticron script (systemd)'
+  copy:
+      dest: '/lib/systemd/system/apticron.service'
+      src: 'apticron.service'
+      mode: '0644'
+  when: apt_systemd.stat.exists
+  notify: 'Enable apticron service'

@@ -1,0 +1,82 @@
+---
+- import_tasks: deploy-user.yml
+
+- name: 'Correct hostname in /etc/hosts'
+  lineinfile:
+      dest: '/etc/hosts'
+      regexp: '^127\.0\.1\.1\s'
+      line: '127.0.1.1	{{ inventory_hostname }} {{ inventory_hostname_short }}'
+
+- name: 'Correct hostname'
+  hostname:
+      name: '{{ inventory_hostname_short }}'
+
+- name: 'Set a descriptive name for root'
+  user:
+      name: root
+      comment: '{{ root_name }}'
+
+- import_tasks: apt-listchanges.yml
+- import_tasks: packages.yml
+- import_tasks: motd.yml
+
+- name: 'Make /etc/systemd/system/getty@.service.d'
+  file:
+      path: '/etc/systemd/system/getty@.service.d'
+      state: 'directory'
+      mode: '0755'
+  when: srcf_auto_login is not defined or srcf_auto_login
+
+- name: 'Enable automatic getty login'
+  copy:
+      dest: '/etc/systemd/system/getty@.service.d/srcf-ansible-autologin.conf'
+      content: |
+          [Service]
+          ExecStart=
+          ExecStart=-/sbin/agetty --autologin deploy --login-pause -o '-f -p -- \\u' --noclear %I $TERM
+  when: srcf_auto_login is not defined or srcf_auto_login
+  notify: 'Restart getty'
+
+- name: 'Configure NTP'
+  import_role:
+      name: geerlingguy.ntp
+  vars:
+      ntp_manage_config: true
+
+- name: 'Configure NFSv4 ID mapper'
+  lineinfile:
+      dest: '/etc/idmapd.conf'
+      regexp: '^[#\s]*Domain\s*='
+      line: 'Domain = {{ nfs_idmap_domain }}'
+  notify: 'Restart NFSv4 ID mapper'
+
+- name: 'Configure Munin node'
+  import_role:
+      name: geerlingguy.munin-node
+
+- import_tasks: apt-config.yml
+
+- name: 'Configure fail2ban'
+  copy:
+      dest: '/etc/fail2ban/fail2ban.d/srcf-ansible.conf'
+      content: |
+          # Maintained via Ansible; changes are liable to be overwritten
+          [Definition]
+          dbfile = None
+      mode: '0644'
+  notify:
+      - 'Restart fail2ban'
+      - 'Tidy up after fail2ban'
+
+- name: 'Disable RDRAND on boot'
+  copy:
+      dest: '/etc/default/grub.d/srcf-ansible-nordrand.cfg'
+      content: |
+          GRUB_CMDLINE_LINUX="nordrand $GRUB_CMDLINE_LINUX"
+      mode: '0644'
+  notify:
+      - 'Update GRUB'
+
+# TODO: in the "has NIS users + internal network + ..." role:
+# - configure rsyslog
+

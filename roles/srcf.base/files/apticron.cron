@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# This script is supplied by the srcf-server package, not by apticron!
+#
+# It simply runs apticron, in place of the apticron-packaged cron job
+# in /etc/cron.d, *after* unattended-upgrades has run -- i.e. it should
+# only warn about packages unattended-upgrades did not upgrade (and/or
+# packages which were published in the short while since u-a ran!).
+#
+# It also fudges timestamps so that apticron --cron never triggers if
+# this job is working.
+#
+
+[ -x /usr/sbin/apticron ] || exit 0
+
+# If we're running on systemd, unattended-upgrade might run on a
+# systemd timer rather than cron (on some distros), so we do too
+if [ -d /run/systemd/system ] && systemctl is-active apt-daily-upgrade.timer >/dev/null
+then
+	exit 0
+fi
+
+/usr/sbin/apticron && touch -d "+12 hours" /var/lib/apticron/cron_run
+

@@ -1,0 +1,47 @@
+---
+- name: 'Ensure Postfix and other things we need are installed'
+  apt:
+      name:
+          - postfix
+          - iputils-ping
+      state: present
+
+- name: 'Check whether we are on the same network as {{ mail_mx_srcf }}'
+  command: 'ping -c1 -t1 {{ mail_mx_srcf }}'
+  register: mx_local
+  ignore_errors: true
+  changed_when: false
+
+- name: 'Determine hostname for mail'
+  set_fact:
+      mail_hostname_default: "{{ lookup('dig', lookup('dig', ansible_host, 'qtype=A'), 'qtype=PTR')|regex_replace('\\.$', '') }}"
+
+- name: 'Reject erroneous mail hostname'
+  fail:
+      msg: "Cannot determine canonical hostname ({{ ansible_host }} --> {{ lookup('dig', ansible_host, 'qtype=A') }} --> {{ lookup('dig', lookup('dig', ansible_host, 'qtype=A'), 'qtype=PTR') }})"
+  when:
+      - mail_hostname_default is not match('[^ ]+\.[^ ]+')
+      - mail_hostname is not defined
+
+- name: 'Configure Postfix'
+  template: src=postfix-main.cf.j2 dest=/etc/postfix/main.cf backup=yes
+
+- name: 'Enable direct mail routing'
+  when: mx_local is succeeded
+  lineinfile:
+      path: '/var/lib/postfix/srcf-server-transport'
+      create: yes
+      regexp: '^{{ item|regex_escape }}\s'
+      line: '{{ item }}   smtp:[{{ mail_mx_srcf }}]'
+  with_items:
+      - 'srcf.net'
+      - 'srcf.ucam.org'
+  notify: "Update Postfix transport database"
+
+- name: 'Disable direct mail routing'
+  when: mx_local is failed
+  copy:
+      path: '/var/lib/postfix/srcf-server-transport'
+      content: ''
+      force: yes
+  notify: "Update Postfix transport database"

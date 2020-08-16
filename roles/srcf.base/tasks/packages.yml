@@ -1,0 +1,54 @@
+---
+- name: 'Add entropyclient PPA'
+  apt_repository:
+      repo: 'ppa:malcscott/entropy'
+
+- name: 'Add SRCF PPA'
+  apt_repository:
+      repo: 'ppa:srcf/serveradmin'
+
+- name: 'Update apt'
+  apt:
+      update_cache: yes
+      cache_valid_time: 3600
+      upgrade: safe
+      autoclean: yes
+
+- name: 'Install basic packages'
+  apt:
+      name:
+          - sudo
+          - tmux
+          - byobu
+          - mosh
+          - zsh
+          - curl
+          - wget
+          - dnsutils
+          - mercurial
+          - subversion
+          - git
+          - htop
+          - vim
+          - ncurses-term
+          - rsyslog-relp
+          - bsd-mailx
+          - lsb-release
+          - ca-certificates
+          - dnsutils
+          - apticron
+          - munin-node
+          - molly-guard
+          - nfs-client
+          - entropyclient
+      state: latest
+      autoclean: yes
+
+- name: 'Remove unwanted packages'
+  apt:
+      name:
+          - whoopsie
+          - landscape-common
+      state: absent
+      purge: yes
+      autoclean: yes

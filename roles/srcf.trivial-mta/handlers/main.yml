@@ -1,0 +1,3 @@
+---
+- name: 'Update Postfix transport database'
+  command: 'postmap /var/lib/postfix/srcf-server-transport'
