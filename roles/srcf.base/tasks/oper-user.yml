@@ -1,0 +1,40 @@
+# When we stop wanting a user/key, we shouldn't just remove them from this file;
+# we should leave them here but with `state: absent` so they get tidied away.
+---
+- name: 'Create oper user'
+  ansible.builtin.user:
+      name: 'oper'
+      comment: 'SRCF operator'
+      group: 'oper'
+      groups:
+          - adm
+          - cdrom
+          - sudo
+          - dip
+          - plugdev
+          - netdev
+          - lxd
+      shell: '/bin/bash'
+  register: oper_user
+- debug: var=oper_user
+
+  # The Ubuntu autoinstall process seems liable to set up the first user
+  # homedir with chown root:root chmod 755, which is useless
+- name: 'Fix oper user homedir permissions'
+  ansible.builtin.file:
+    path: "{{ oper_user.home }}"
+    state: directory
+    mode: '750'
+    owner: oper
+    group: oper
+  when: oper_user.state == 'present'
+  register: oper_homedir
+- debug: var=oper_homedir
+
+- name: 'Update oper user SSH keys'
+  authorized_key:
+      user: oper
+      key: |
+        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINf788himRIwHB49UbZMVfdkMwlAGot7YWjwDD1zfvzq edwin@ant
+        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICebUFWvr69nXD9SmkBJzpMtRTMEiomZiDgpyS1eaZm5 edwin@mantis
+      exclusive: yes

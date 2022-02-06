@@ -1,5 +1,5 @@
 ---
-- import_tasks: deploy-user.yml
+- import_tasks: oper-user.yml
 
 - name: 'Correct hostname in /etc/hosts'
   lineinfile:
@@ -33,7 +33,7 @@
       content: |
           [Service]
           ExecStart=
-          ExecStart=-/sbin/agetty --autologin deploy --login-pause -o '-f -p -- \\u' --noclear %I $TERM
+          ExecStart=-/sbin/agetty --autologin oper --login-pause -o '-f -p -- \\u' --noclear %I $TERM
   when: srcf_auto_login is not defined or srcf_auto_login
   notify: 'Restart getty'
 
