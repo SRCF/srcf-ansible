@@ -14,11 +14,11 @@
 
 - name: 'Determine hostname for mail'
   set_fact:
-      mail_hostname_default: "{{ lookup('dig', lookup('dig', ansible_host, 'qtype=A'), 'qtype=PTR')|regex_replace('\\.$', '') }}"
+      mail_hostname_default: "{{ lookup('dig', lookup('dig', inventory_hostname, 'qtype=A'), 'qtype=PTR')|regex_replace('\\.$', '') }}"
 
 - name: 'Reject erroneous mail hostname'
   fail:
-      msg: "Cannot determine canonical hostname ({{ ansible_host }} --> {{ lookup('dig', ansible_host, 'qtype=A') }} --> {{ lookup('dig', lookup('dig', ansible_host, 'qtype=A'), 'qtype=PTR') }})"
+      msg: "Cannot determine canonical hostname ({{ inventory_hostname }} --> {{ lookup('dig', inventory_hostname, 'qtype=A') }} --> {{ lookup('dig', lookup('dig', inventory_hostname, 'qtype=A'), 'qtype=PTR') }})"
   when:
       - mail_hostname_default is not match('[^ ]+\.[^ ]+')
       - mail_hostname is not defined
