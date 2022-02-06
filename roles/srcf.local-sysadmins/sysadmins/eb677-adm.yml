@@ -1,0 +1,19 @@
+---
+- name: 'eb677-adm group'
+  ansible.builtin.group:
+      name: 'eb677-adm'
+      gid: 11492
+
+- name: 'eb677-adm user'
+  ansible.builtin.user:
+      name: 'eb677-adm'
+      comment: 'Edwin Bahrami Balani'
+      uid: 10163
+      group: 'eb677-adm'
+      groups: ['sudo', 'adm']
+      shell: '/bin/zsh'
+
+- name: 'eb677-adm SSH keys'
+  ansible.posix.authorized_key:
+      user: 'eb677-adm'
+      key: 'https://eb677.user.srcf.net/adm_authorized_keys'
