@@ -10,5 +10,12 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Run ansible-lint
+      - name: Lint requirements
         uses: ansible-community/ansible-lint-action@v6.2.1
+        with:
+          path: "requirements.yml"
+
+      - name: Lint roles
+        uses: ansible-community/ansible-lint-action@v6.2.1
+        with:
+          path: "roles/"
