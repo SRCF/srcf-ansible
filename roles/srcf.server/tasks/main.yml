@@ -1,0 +1,20 @@
+---
+- name: 'Set a descriptive name for root'
+  user:
+      name: root
+      comment: '{{ root_name }}'
+
+- import_tasks: packages.yml
+
+- name: 'Configure NFSv4 ID mapper'
+  lineinfile:
+      dest: '/etc/idmapd.conf'
+      regexp: '^[#\s]*Domain\s*='
+      line: 'Domain = {{ nfs_idmap_domain }}'
+  notify: 'Restart NFSv4 ID mapper'
+
+- name: 'Further configure unattended-upgrades'
+  copy:
+      dest: '/etc/apt/apt.conf.d/52unattended-upgrades-srcf-ansible'
+      src: 'unattended-upgrades'
+      mode: '0644'

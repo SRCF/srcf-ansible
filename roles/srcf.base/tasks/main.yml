@@ -1,6 +1,4 @@
 ---
-- import_tasks: oper-user.yml
-
 - name: 'Correct hostname in /etc/hosts'
   lineinfile:
       dest: '/etc/hosts'
@@ -11,13 +9,19 @@
   hostname:
       name: '{{ inventory_hostname_short }}'
 
-- name: 'Set a descriptive name for root'
-  user:
-      name: root
-      comment: '{{ root_name }}'
+- import_tasks: oper-user.yml
 
 - import_tasks: apt-listchanges.yml
-- import_tasks: packages.yml
+
+- name: 'Remove unwanted packages'
+  apt:
+      name:
+          - whoopsie
+          - landscape-common
+      state: absent
+      purge: yes
+      autoclean: yes
+
 - import_tasks: motd.yml
 
 - name: 'Make /etc/systemd/system/getty@.service.d'
@@ -43,13 +47,6 @@
       name: geerlingguy.ntp
   vars:
       ntp_manage_config: true
-
-- name: 'Configure NFSv4 ID mapper'
-  lineinfile:
-      dest: '/etc/idmapd.conf'
-      regexp: '^[#\s]*Domain\s*='
-      line: 'Domain = {{ nfs_idmap_domain }}'
-  notify: 'Restart NFSv4 ID mapper'
 
 - name: 'Configure Munin node'
   import_role:

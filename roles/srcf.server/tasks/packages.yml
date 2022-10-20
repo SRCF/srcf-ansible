@@ -43,12 +43,3 @@
           - entropyclient
       state: latest
       autoclean: yes
-
-- name: 'Remove unwanted packages'
-  apt:
-      name:
-          - whoopsie
-          - landscape-common
-      state: absent
-      purge: yes
-      autoclean: yes

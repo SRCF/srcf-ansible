@@ -1,0 +1,6 @@
+---
+- name: 'Restart NFSv4 ID mapper'
+  service:
+      name: 'nfs-idmapd'
+      state: restarted
+  ignore_errors: yes

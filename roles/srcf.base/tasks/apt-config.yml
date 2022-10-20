@@ -7,12 +7,6 @@
       security_ssh_x11_forwarding: "yes"
       security_ssh_permit_root_login: "prohibit-password"
 
-- name: 'Further configure unattended-upgrades'
-  copy:
-      dest: '/etc/apt/apt.conf.d/52unattended-upgrades-srcf-ansible'
-      src: 'unattended-upgrades'
-      mode: '0644'
-
 - name: 'Install apticron script (cron)'
   copy:
       dest: '/etc/cron.daily/apticron'

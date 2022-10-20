@@ -15,5 +15,3 @@ security_sudoers_passwordless:
     - "%sysadmins"
 security_autoupdate_mail_to: "root"
 security_autoupdate_mail_on_error: false
-nfs_idmap_domain: "srcf.net"
-root_name: "SRCF server ({{ inventory_hostname_short }})"

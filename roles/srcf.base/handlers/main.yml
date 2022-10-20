@@ -1,10 +1,4 @@
 ---
-- name: 'Restart NFSv4 ID mapper'
-  service:
-      name: 'nfs-idmapd'
-      state: restarted
-  ignore_errors: yes
-
 - name: 'Restart fail2ban'
   service:
       name: 'fail2ban'

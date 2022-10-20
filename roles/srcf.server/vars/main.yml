@@ -1,0 +1,2 @@
+---
+root_name: "SRCF server ({{ inventory_hostname_short }})"

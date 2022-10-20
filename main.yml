@@ -14,6 +14,7 @@
       - simple_standalone
   roles:
       - srcf.trivial-mta
+      - srcf.server
   become: yes
 
 - name: 'SRCF standalone server (no NIS, no private network)'
