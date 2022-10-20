@@ -58,13 +58,11 @@
 - import_tasks: apt-config.yml
 
 - name: 'Configure fail2ban'
-  copy:
-      dest: '/etc/fail2ban/fail2ban.d/srcf-ansible.conf'
-      content: |
-          # Maintained via Ansible; changes are liable to be overwritten
-          [Definition]
-          dbfile = None
-      mode: '0644'
+  template:
+    src: fail2ban.conf.j2
+    dest: '/etc/fail2ban/fail2ban.d/srcf-ansible.conf'
+    backup: yes
+    mode: '0644'
   notify:
       - 'Restart fail2ban'
       - 'Tidy up after fail2ban'
