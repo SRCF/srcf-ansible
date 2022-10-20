@@ -25,7 +25,7 @@
       path: '/etc/systemd/system/getty@.service.d'
       state: 'directory'
       mode: '0755'
-  when: srcf_auto_login is not defined or srcf_auto_login
+  when: srcf_auto_login
 
 - name: 'Enable automatic getty login'
   copy:
@@ -34,7 +34,8 @@
           [Service]
           ExecStart=
           ExecStart=-/sbin/agetty --autologin oper --login-pause -o '-f -p -- \\u' --noclear %I $TERM
-  when: srcf_auto_login is not defined or srcf_auto_login
+      mode: '0644'
+  when: srcf_auto_login
   notify: 'Restart getty'
 
 - name: 'Configure NTP'
