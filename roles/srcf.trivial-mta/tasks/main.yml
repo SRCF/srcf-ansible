@@ -41,7 +41,7 @@
 - name: 'Disable direct mail routing'
   when: mx_local is failed
   copy:
-      path: '/var/lib/postfix/srcf-server-transport'
+      dest: '/var/lib/postfix/srcf-server-transport'
       content: ''
       force: yes
   notify: "Update Postfix transport database"
