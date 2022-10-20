@@ -1,28 +1,28 @@
 ---
 - name: 'SRCF base'
   tags:
-      - base
+    - base
   hosts: all
   roles:
-      - srcf.base
+    - srcf.base
   become: yes
 
 - name: 'SRCF simple server'
   tags:
-      - simple
+    - simple
   hosts:
-      - simple_standalone
+    - simple_standalone
   roles:
-      - srcf.trivial-mta
-      - srcf.server
+    - srcf.trivial-mta
+    - srcf.server
   become: yes
 
 - name: 'SRCF standalone server (no NIS, no private network)'
   tags:
-      - standalone
+    - standalone
   hosts:
-      - simple_standalone
+    - simple_standalone
   roles:
-      - srcf.local-sysadmins
+    - srcf.local-sysadmins
   become: yes
 
