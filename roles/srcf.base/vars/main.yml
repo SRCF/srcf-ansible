@@ -5,10 +5,11 @@ ntp_servers:
     - "ntp3.cam.ac.uk iburst"
 ntp_timezone: Europe/London
 munin_node_allowed_cidrs:
+  # NB: these *must* specify a netmask length
     - 10.100.64.64/26
-    - 131.111.179.86
-    - 2001:630:212:700:a::1
-    - 2a05:b400:10c::1:5315
+    - 131.111.179.86/32
+    - 2001:630:212:700:a::1/128
+    - 2a05:b400:10c::1:5315/128
 security_ssh_password_authentication: "no"
 security_sudoers_passwordless:
     - "%sudo"
