@@ -1,0 +1,22 @@
+- name: "set up tenant user {{ item.crsid }}"
+  user:
+    name: "{{ item.crsid }}"
+    comment: "{{ item.realname }}"
+    groups:
+      - adm
+      - sudo
+    shell: '/bin/bash'
+  loop: "{{ tenant_users }}"
+
+- name: "set up ssh pubkeys for {{ item.crsid }}"
+  ansible.posix.authorized_key:
+    user: "{{ item.crsid }}"
+    key: "{{ item.pubkeys }}"
+  loop: "{{ tenant_users }}"
+
+- name: set up mail alias for root
+  ansible.builtin.lineinfile:
+    path: /etc/aliases
+    regexp: '^root\b'
+    line: "root:   {{ root_mail_destination }}"
+  notify: 'Update Postfix aliases.db'

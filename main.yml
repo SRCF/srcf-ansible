@@ -17,6 +17,16 @@
     - srcf.server
   become: yes
 
+- name: 'SRCF-hosted tenant VMs'
+  tags:
+    - hosted
+  hosts:
+    - hosted
+  roles:
+    - srcf.trivial-mta
+    - srcf.hosted
+  become: yes
+
 - name: 'SRCF standalone server (no NIS, no private network)'
   tags:
     - standalone
