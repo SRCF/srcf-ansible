@@ -1,0 +1,15 @@
+#SPDX-License-Identifier: MIT
+---
+
+- name: Clean up old sudoers.d file if it exists
+  ansible.builtin.file:
+    path: /etc/sudoers.d/{{ item }}
+    state: absent
+  loop:
+    - xcpngtweak
+    - xenservertweak
+
+- name: Clean up logrotate cronjob
+  ansible.builtin.file:
+    path: /etc/cron.daily/logrotate-xenservertweak
+    state: absent

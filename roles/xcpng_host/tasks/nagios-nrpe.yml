@@ -1,0 +1,31 @@
+#SPDX-License-Identifier: MIT
+---
+
+- name: Install/uninstall Nagios packages
+  ansible.builtin.dnf:
+    enablerepo:
+      - base
+      - extras
+      - updates
+      - epel
+    state: "{{ xcpng_install_nagios_nrpe | ternary('present', 'absent') }}"
+    name: "{{ _xcpng_nagios_packages }}"
+
+- name: Create/remove nrpe.d directory
+  ansible.builtin.file:
+    state: "{{ xcpng_install_nagios_nrpe | ternary('directory', 'absent') }}"
+    path: /etc/nagios/nrpe.d
+
+- name: include nrpe.d
+  when: xcpng_install_nagios_nrpe
+  ansible.builtin.lineinfile:
+    path: /etc/nagios/nrpe.cfg
+    line: "include_dir=/etc/nagios/nrpe.d/"
+  notify: restart_nrpe
+
+- name: Write config file
+  when: xcpng_install_nagios_nrpe
+  ansible.builtin.template:
+    dest: /etc/nagios/nrpe.d/00_ansible.cfg
+    src: nrpe.cfg.j2
+  notify: restart_nrpe

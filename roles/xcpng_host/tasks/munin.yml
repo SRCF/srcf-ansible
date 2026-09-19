@@ -1,0 +1,24 @@
+---
+- name: Comment out host_name
+  ansible.builtin.replace:
+    path: /etc/munin/munin-node.conf
+    regexp: '^(?:#\s*)?(host_name\s.*)$'
+    replace: '#\1'
+    before: "ANSIBLE MANAGED"
+
+- name: Comment out existing allow and cidr_allow rules
+  ansible.builtin.replace:
+    path: /etc/munin/munin-node.conf
+    regexp: '^(?:# ?)?(allow|cidr_allow\s.*)$'
+    replace: '#\1'
+    before: "ANSIBLE MANAGED"
+
+- name: Configure Munin cidr_allow rules
+  ansible.builtin.blockinfile:
+    path: /etc/munin/munin-node.conf
+    block: |
+      {% for addr in xcpng_munin_servers -%}
+      cidr_allow {{ addr | ansible.utils.ipsubnet }}
+      {% endfor %}
+
+# TODO rest of owl

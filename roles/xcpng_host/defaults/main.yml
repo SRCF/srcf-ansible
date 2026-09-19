@@ -1,0 +1,22 @@
+#SPDX-License-Identifier: MIT
+---
+# 127.0.0.1 is always added a Munin server
+xcpng_munin_servers: []
+
+xcpng_nagios_servers: []
+
+xcpng_ssh_keys: []
+
+xcpng_extra_packages: []
+
+xcpng_xapi_fw_ipv4: []
+xcpng_xapi_fw_ipv6: []
+
+xcpng_dom0_memory_mb: 2048
+
+xcpng_install_denyhosts: true
+xcpng_install_nagios_nrpe: false
+xcpng_fix_hostname: true
+xcpng_enable_ipmi: true
+
+xcpng_experimental_allow_citrix_hypervisor: false

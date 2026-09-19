@@ -1,0 +1,43 @@
+#SPDX-License-Identifier: MIT
+---
+
+- name: Run preflight checks
+  ansible.builtin.include_tasks: preflight-checks.yml
+
+- name: Clean up legacy files
+  ansible.builtin.include_tasks: cleanup-legacy.yml
+
+- name: Fix hostname entries in /etc/hosts
+  when: xcpng_fix_hostname
+  ansible.builtin.lineinfile:
+    regexp: "^{{ item | regex_escape }}\\s"
+    line: "{{ item }} {{ ansible_facts['hostname'] }}"
+    path: /etc/hosts
+  loop: "{{ ansible_facts['all_ipv4_addresses'] }}"
+
+- name: Set up passwordless sudo for wheel group
+  community.general.sudoers:
+    name: ansible-xcpng-host
+    nopassword: true
+    group: wheel
+
+- name: Install base packages
+  ansible.builtin.dnf:
+    enablerepo:
+      - base
+      - extras
+      - updates
+      - epel
+    state: present
+    name: "{{ _xcpng_base_install_packages }}"
+
+- name: Configure Nagios NRPE
+  ansible.builtin.include_tasks: nagios-nrpe.yml
+
+- name: Configure Munin
+  ansible.builtin.include_tasks: munin
+
+- name: Configure firewall
+  ansible.builtin.include_tasks: firewall
+
+# TODO make sure all other task files are included here

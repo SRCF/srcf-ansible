@@ -1,0 +1,21 @@
+#SPDX-License-Identifier: MIT
+---
+# handlers file for xcpng_host
+- name: Reload IPv4 firewall
+  listen: reload_fw_ipv4
+  ansible.builtin.service:
+    name: iptables
+    state: restarted
+
+- name: Reload IPv6 firewall
+  listen: reload_fw_ipv6
+  ansible.builtin.service:
+    name: ip6tables
+    state: restarted
+
+- name: Restart Nagios NRPE
+  listen: restart_nrpe
+  ansible.builtin.service:
+    name: nrpe
+    enabled: true
+    state: restarted

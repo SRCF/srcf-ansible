@@ -1,0 +1,14 @@
+#SPDX-License-Identifier: MIT
+---
+
+# Preflight checks before running the main tasks
+#
+- name: Check for Citrix Hypervisor
+  ansible.builtin.assert:
+    fail_msg: "Detected Citrix Hypervisor.  Set xcpng_experimental_allow_citrix_hypervisor to apply this role, which *might* work."
+    that: "xcpng_experimental_allow_citrix_hypervisor or ansible_facts['xcpng']['product']['brand'] != 'Citrix Hypervisor'"
+
+- name: Check supported product
+  ansible.builtin.assert:
+    fail_msg: "This host doesn't look like XCP-ng!"
+    that: "ansible_facts['xcpng']['product']['brand'] in ('XCP-ng', 'Citrix Hypervisor')"

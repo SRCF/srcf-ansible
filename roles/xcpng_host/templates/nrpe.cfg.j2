@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+
+# Ansible variable: xcpng_nagios_servers
+allowed_hosts={{ xcpng_nagios_servers | join(",") }}
+
+command[check_disk_root]=/usr/lib64/nagios/plugins/check_disk -w 8% -c 128 -W 5% -K 2% -p /

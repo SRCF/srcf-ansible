@@ -1,0 +1,57 @@
+---
+- name: Configure {{ item.path }}
+  loop:
+    - addresses: "{{ xcpng_xapi_fw_ipv4 }}"
+      path: /etc/sysconfig/iptables
+      handler: reload_fw_ipv4
+    - addresses: "{{ xcpng_xapi_fw_ipv6 }}"
+      path: /etc/sysconfig/ip6tables
+      handler: reload_fw_ipv6
+  block:
+    - name: Declare iptables chain
+      ansible.builtin.lineinfile:
+        insertbefore: "^:RH-Firewall-1-INPUT\\b"
+        firstmatch: true
+        line: ":XSTWEAKFW - [0:0]"
+        path: "{{ item.path }}"
+        backup: true
+      notify: "{{ item.handler }}"
+
+    - name: Allow Munin
+      ansible.builtin.lineinfile:
+        line: "-A RH-Firewall-1-INPUT -p tcp -m tcp --dport 4949 -j ACCEPT"
+        insertbefore: "^-A RH-Firewall-1-INPUT -j REJECT\b"
+        firstmatch: true
+        path: "{{ item.path }}"
+        backup: true
+      notify: "{{ item.handler }}"
+
+    - name: Allow Nagios NRPE
+      ansible.builtin.lineinfile:
+        state: "{{ xcpng_install_nagios_nrpe | ternary('present', 'absent') }}"
+        line: "-A RH-Firewall-1-INPUT -p tcp -m tcp --dport 5666 -j ACCEPT"
+        insertbefore: "^-A RH-Firewall-1-INPUT -j REJECT\b"
+        firstmatch: true
+        path: "{{ item.path }}"
+        backup: true
+      notify: "{{ item.handler }}"
+
+    - name: Insert chain rules
+      ansible.builtin.blockinfile:
+        path: "{{ item.path }}"
+        backup: true
+        insertbefore: "^COMMIT\b"
+        block: |
+          {% for src_addr in item.addresses -%}
+          -A XSTWEAKFW -s {{ src_addr }} -j ACCEPT
+          {% endfor %}
+          -A XSTWEAKFW -j REJECT
+      notify: "{{ item.handler }}"
+
+    - name: Redirect stock ACCEPT rules to firewall chain
+      ansible.builtin.replace:
+        path: "{{ item.path }}"
+        backup: true
+        regexp: "^(-A RH-Firewall-1-INPUT .*--dports? (80|443|694|21064|5404,5405)) -j ACCEPT$"
+        replace: '\1 -j XSTWEAKFW'
+      notify: "{{ item.handler }}"
