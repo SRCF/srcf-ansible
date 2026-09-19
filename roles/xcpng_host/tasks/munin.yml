@@ -17,7 +17,7 @@
   ansible.builtin.blockinfile:
     path: /etc/munin/munin-node.conf
     block: |
-      {% for addr in xcpng_munin_servers -%}
+      {% for addr in ((xcpng_munin_servers + ["127.0.0.1"]) | unique) -%}
       cidr_allow {{ addr | ansible.utils.ipsubnet }}
       {% endfor %}
 
