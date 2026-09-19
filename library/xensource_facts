@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+# The following magic line tells Ansible how to pass arguments to this script.
+# WANT_JSON
+
+from collections import defaultdict
+from datetime import datetime
+import json
+import shlex
+import sys
+
+DEFAULT_INVENTORY_PATH = '/etc/xensource-inventory'
+
+
+def main():
+    with open(sys.argv[1], 'rb') as argfile:
+        modargs = json.load(argfile)
+    result = run_module(modargs)
+    ret = 1 if result['failed'] else 0
+    print(json.dumps(result))
+    raise SystemExit(ret)
+
+
+def run_module(modargs):
+    result = {
+        'changed': False,
+        'failed': True,
+        'ansible_facts': {},
+    }
+    inv_path = modargs.get('inventory_path', DEFAULT_INVENTORY_PATH)
+
+    try:
+        result['ansible_facts'] = {'xensource': get_inventory_facts(inv_path)}
+    except FileNotFoundError:
+        result['msg'] = 'xensource-inventory file not found at %r' % inv_path,
+        return result
+
+    result['failed'] = False
+
+    return result
+
+
+def get_inventory_facts(inventory_path):
+    with open(inventory_path, 'r', encoding='utf-8') as invf:
+        inventory_lines = invf.readlines()
+
+    facts = defaultdict(dict)
+    for line in inventory_lines:
+        _process_line(facts, line)
+
+    return facts
+
+
+def _process_line(facts, line):
+    if not line:
+        return
+    if line.lstrip().startswith('#'):
+        return
+
+    varname, _, raw_value = line.partition("=")
+    if varname not in INVENTORY_TO_FACT:
+        return
+
+    unquoted_value = list(shlex.shlex(raw_value, posix=True))
+    if len(unquoted_value) != 1:
+        raise ValueError("inventory variable not a single string: %s" % line)
+
+    raw_value = unquoted_value[0]
+    var_mapping = INVENTORY_TO_FACT[varname]
+
+    processor = None
+    if isinstance(var_mapping, tuple):
+        if callable(var_mapping[0]):
+            processor = var_mapping[0]
+            map_path = var_mapping[1:]
+        else:
+            map_path = var_mapping
+
+    elif isinstance(var_mapping, str):
+        map_path = (var_mapping,)
+
+    else:
+        assert False, 'Faulty variable mapping'
+
+    final_value = raw_value
+    if processor is not None:
+        final_value = processor(raw_value)
+
+    # Deep-set the final value
+    container = facts
+    for nodename in map_path[:-1]:
+        container = container[nodename]
+    container[map_path[-1]] = final_value
+
+
+def _parse_partition_layout(value):
+    return value.split(',')
+
+
+def _parse_installation_date(value):
+    timestamp = datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
+    return {
+        'date': timestamp.date().isoformat(),
+        'time': timestamp.time().isoformat(),
+        'unix': timestamp.timestamp(),
+        'value': value,
+    }
+
+
+INVENTORY_TO_FACT = {
+        'PRIMARY_DISK': ('disk', 'primary_disk'),
+        'BACKUP_PARTITION': ('disk', 'backup_partition'),
+        'PARTITION_LAYOUT': (_parse_partition_layout, 'disk', 'partition_layout'),
+
+        'PRODUCT_NAME': ('product', 'name'),
+        'PRODUCT_BRAND': ('product', 'brand'),
+        'PRODUCT_VERSION': ('product', 'version'),
+        'PRODUCT_VERSION_TEXT': ('product', 'text_version'),
+        'PRODUCT_VERSION_TEXT_SHORT': ('product', 'text_shortversion'),
+        'BUILD_NUMBER': ('product', 'build'),
+
+        'INSTALLATION_UUID': ('installation', 'uuid'),
+        'INSTALLATION_DATE': (_parse_installation_date, 'installation', 'timestamp'),
+
+        'DOM0_VCPUS': (int, 'dom0_config', 'vcpus'),
+        'DOM0_MEM': (int, 'dom0_config', 'memory_mb'),
+        'CONTROL_DOMAIN_UUID': ('dom0_uuid'),
+
+        'PLATFORM_NAME': ('platform', 'name'),
+        'PLATFORM_VERSION': ('platform', 'version'),
+
+        'MANAGEMENT_INTERFACE': ('management', 'interface'),
+        'MANAGEMENT_ADDRESS_TYPE': (str.lower, 'management', 'address_type'),
+}
+
+
+if __name__ == '__main__':
+    main()
