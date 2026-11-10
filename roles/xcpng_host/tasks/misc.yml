@@ -1,0 +1,9 @@
+#SPDX-License-Identifier: MIT
+---
+- name: Adjust OOM score for OpenVSwitch
+  ansible.builtin.copy:
+    path: /etc/systemd/service/openvswitch.service.d/xcpngtweak-oomscoreadj.conf
+    content: |
+      {{ ansible_managed }}
+      [Service]
+      OOMScoreAdj=-1000

@@ -1,1 +1,11 @@
-# TODO
+#SPDX-License-Identifier: MIT
+---
+- name: Set dom0_mem hypervisor parameter
+  when: "ansible_facts['xen_cmdline']['dom0_mem'] != (xcpng_dom0_memory_mb | str)"
+  ansible.builtin.command:
+    cmd: "/opt/xensource/libexec/xen-cmdline --set-xen dom0_mem={{ xcpng_dom0_memory_mb }}M,max:{{ xcpng_dom0_memory_mb }}M"
+
+- name: Set cpuid hypervisor parameter
+  when: "ansible_facts['xen_cmdline']['cpuid'] != _xcpng_cmdline_cpuid"
+  ansible.builtin.command:
+    cmd: "/opt/xensource/libexec/xen-cmdline --set-xen cpuid={{ _xcpng_cmdline_cpuid }}"

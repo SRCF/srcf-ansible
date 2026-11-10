@@ -1,3 +1,4 @@
+#SPDX-License-Identifier: MIT
 ---
 - name: Comment out host_name
   ansible.builtin.replace:

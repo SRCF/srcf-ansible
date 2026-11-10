@@ -31,13 +31,31 @@
     state: present
     name: "{{ _xcpng_base_install_packages }}"
 
+- name: Configure firewall
+  ansible.builtin.include_tasks: firewall.yml
+
+# TODO finish implementing Munin tasks
+# - name: Configure Munin
+#   ansible.builtin.include_tasks: munin.yml
+
+# TODO finish implementing Denyhosts tasks
+# - name: Configure Denyhosts
+#   when: xcpng_install_denyhosts
+#   ansible.builtin.include_tasks: denyhosts.yml
+
+# TODO implement Dehydrated tasks
+# - name: Configure Munin
+#   ansible.builtin.include_tasks: munin.yml
+
 - name: Configure Nagios NRPE
+  when: xcpng_install_nagios_nrpe
   ansible.builtin.include_tasks: nagios-nrpe.yml
 
-- name: Configure Munin
-  ansible.builtin.include_tasks: munin
+- name: Configure kernel modules
+  ansible.builtin.include_tasks: kernel-modules.yml
 
-- name: Configure firewall
-  ansible.builtin.include_tasks: firewall
+- name: Configure Xen command line args
+  ansible.builtin.include_tasks: xen-cmdline.yml
 
-# TODO make sure all other task files are included here
+- name: Misc other tasks
+  ansible.builtin.include_tasks: misc.yml

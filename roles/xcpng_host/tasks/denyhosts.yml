@@ -1,3 +1,11 @@
 #SPDX-License-Identifier: MIT
 ---
-# TODO
+# TODO rest of owl
+
+- name: Adjust OOM score for denyhosts
+  ansible.builtin.copy:
+    path: /etc/systemd/service/denyhosts.service.d/xcpngtweak-oomscoreadj.conf
+    content: |
+      {{ ansible_managed }}
+      [Service]
+      OOMScoreAdj=-200

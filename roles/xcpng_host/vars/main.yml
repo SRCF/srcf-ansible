@@ -19,3 +19,10 @@ _xcpng_all_install_packages:
       (_xcpng_nagios_packages if xcpng_install_nagios_nrpe else []) +
       xcpng_extra_packages
    }}"
+
+_xcpng_ipmi_modules:
+  - ipmi_si
+  - ipmi_devintf
+  # - coretemp
+
+_xcpng_cmdline_cpuid: "no-rdrand,no-rdseed"

@@ -1,1 +1,17 @@
-# TODO
+#SPDX-License-Identifier: MIT
+---
+- name: Ensure /etc/rc.modules exists and is executable
+  ansible.builtin.file:
+    name: /etc/rc.modules
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Fix hostname entries in /etc/hosts
+  when: xcpng_enable_ipmi
+  ansible.builtin.blockinfile:
+    block: |
+      {% for mod in _xcpng_ipmi_modules %-}
+      modprobe {{ mod }}
+      {% endfor %}
+    path: /etc/rc.modules
